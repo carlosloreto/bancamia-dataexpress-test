@@ -1,0 +1,80 @@
+@import "tailwindcss";
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+  
+  /* Colores corporativos Bancamía */
+  --bancamia-orange: #FF9B2D;
+  --bancamia-orange-light: #FFB85C;
+  --bancamia-orange-dark: #E6881A;
+  --bancamia-blue: #1E3A5F;
+  --bancamia-blue-light: #2D5F8D;
+  --bancamia-blue-dark: #0F2942;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+/* Estilos personalizados para inputs */
+input:focus,
+select:focus,
+textarea:focus {
+  outline: none;
+}
+
+/* Placeholders más oscuros y visibles */
+input::placeholder,
+textarea::placeholder {
+  color: #6B7280;
+  opacity: 1;
+}
+
+input::-webkit-input-placeholder,
+textarea::-webkit-input-placeholder {
+  color: #6B7280;
+  opacity: 1;
+}
+
+input::-moz-placeholder,
+textarea::-moz-placeholder {
+  color: #6B7280;
+  opacity: 1;
+}
+
+/* Select boxes más oscuros */
+select {
+  color: #374151;
+}
+
+select option {
+  color: #1F2937;
+  background-color: white;
+  font-weight: 500;
+}
+
+select option:disabled {
+  color: #9CA3AF;
+}
+
+/* Scroll suave */
+html {
+  scroll-behavior: smooth;
+}
