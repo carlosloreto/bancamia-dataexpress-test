@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
-// Middleware para verificar autenticación IAP de GCP
-export function middleware(request: NextRequest) {
+// Proxy para verificar autenticación IAP de GCP
+export function proxy(request: NextRequest) {
   // Solo proteger rutas /admin
   if (request.nextUrl.pathname.startsWith('/admin')) {
     

@@ -25,7 +25,7 @@ export async function GET(request: NextRequest) {
 
     // Modo desarrollo: retornar usuario de prueba
     if (process.env.NODE_ENV === 'development') {
-      const cookieStore = cookies();
+      const cookieStore = await cookies();
       const session = cookieStore.get('iap_session');
       
       if (session?.value === 'dev_mode') {

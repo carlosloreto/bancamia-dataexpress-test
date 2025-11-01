@@ -2,7 +2,7 @@
 
 export interface SolicitudCredito {
   id?: string;
-  fechaSolicitud?: Date;
+  fechaSolicitud?: string;
   
   // Información Personal
   nombreCompleto: string;
