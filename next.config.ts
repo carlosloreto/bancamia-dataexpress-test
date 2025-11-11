@@ -6,7 +6,7 @@ const nextConfig: NextConfig = {
   // Configuramos el root explícitamente para evitar conflictos con lockfiles en directorios padre
   turbopack: {
     root: path.resolve(__dirname),
-  } as any,
+  } as { root: string },
 };
 
 export default nextConfig;

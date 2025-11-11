@@ -19,7 +19,7 @@ export default function AdminPage() {
   const [filtro, setFiltro] = useState("");
   const [solicitudSeleccionada, setSolicitudSeleccionada] = useState<SolicitudCredito | null>(null);
   const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
-  const [cargandoUsuario, setCargandoUsuario] = useState(true);
+  const [, setCargandoUsuario] = useState(true);
 
   useEffect(() => {
     cargarSolicitudes();
@@ -99,7 +99,7 @@ export default function AdminPage() {
 
     const rows = solicitudes.map((s) => [
       s.id || "",
-      formatearFecha(s.fechaSolicitud as any),
+      formatearFecha(s.fechaSolicitud),
       s.nombreCompleto,
       s.numeroDocumento,
       s.email,
@@ -356,7 +356,7 @@ export default function AdminPage() {
                         {solicitud.id}
                       </td>
                       <td className="px-6 py-4 text-sm text-gray-600">
-                        {formatearFecha(solicitud.fechaSolicitud as any)}
+                        {formatearFecha(solicitud.fechaSolicitud)}
                       </td>
                       <td className="px-6 py-4 text-sm font-semibold text-gray-900">
                         {solicitud.nombreCompleto}

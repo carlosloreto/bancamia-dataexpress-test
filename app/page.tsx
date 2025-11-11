@@ -4,26 +4,14 @@ import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { initialFormData } from "@/lib/types";
-import { storageService } from "@/lib/storage";
+import { enviarSolicitudCredito } from "@/lib/api";
 
 export default function Home() {
   const [formData, setFormData] = useState(initialFormData);
   const [enviado, setEnviado] = useState(false);
-  const [users, setUsers] = useState([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    fetch('http://localhost:3000/api/v1/users')
-      .then(res => res.json())
-      .then(data => {
-        setUsers(data.data);
-        setLoading(false);
-      })
-      .catch(error => {
-        console.error('Error fetching users:', error);
-        setLoading(false);
-      });
-  }, []);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [solicitudId, setSolicitudId] = useState<string | null>(null);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
@@ -32,26 +20,110 @@ export default function Home() {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  // Función para llenar el formulario con datos de prueba
+  const llenarDatosPrueba = () => {
+    // Calcular fecha de nacimiento para que sea mayor de 18 años
+    const hoy = new Date();
+    const fechaNacimiento = new Date(hoy.getFullYear() - 25, hoy.getMonth(), hoy.getDate());
+    const fechaNacimientoStr = fechaNacimiento.toISOString().split('T')[0];
+
+    setFormData({
+      // Información Personal
+      nombreCompleto: "Juan Pérez García",
+      tipoDocumento: "CC",
+      numeroDocumento: "1234567890",
+      fechaNacimiento: fechaNacimientoStr,
+      estadoCivil: "soltero",
+      genero: "masculino",
+      telefono: "3001234567",
+      email: "juan.perez@email.com",
+      direccion: "Calle 123 #45-67",
+      ciudad: "Bogotá",
+      departamento: "Cundinamarca",
+      
+      // Información Laboral
+      ocupacion: "Ingeniero de Software",
+      empresa: "Tech Solutions S.A.S",
+      cargoActual: "Desarrollador Senior",
+      tipoContrato: "indefinido",
+      ingresosMensuales: "5000000",
+      tiempoEmpleo: "2a5",
+      
+      // Información del Crédito
+      montoSolicitado: "20000000",
+      plazoMeses: "36",
+      proposito: "Compra de vehículo para uso personal y laboral",
+      tieneDeudas: "si",
+      montoDeudas: "3000000",
+      
+      // Referencias
+      refNombre1: "María López",
+      refTelefono1: "3009876543",
+      refRelacion1: "Hermana",
+      refNombre2: "Carlos Rodríguez",
+      refTelefono2: "3158765432",
+      refRelacion2: "Amigo",
+    });
+
+    // Limpiar errores y mensajes previos
+    setError(null);
+    setEnviado(false);
+    setSolicitudId(null);
+
+    // Scroll suave al formulario
+    setTimeout(() => {
+      const formElement = document.querySelector('form');
+      if (formElement) {
+        formElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }, 100);
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    // Limpiar errores previos
+    setError(null);
+    setSolicitudId(null);
+    setIsLoading(true);
+    
     try {
-      // Guardar la solicitud
-      storageService.guardarSolicitud(formData);
+      // Enviar solicitud a la API
+      const resultado = await enviarSolicitudCredito(formData);
       
-      // Mostrar mensaje de éxito
-      setEnviado(true);
-      
-      // Resetear el formulario después de 3 segundos
-      setTimeout(() => {
-        setFormData(initialFormData);
-        setEnviado(false);
+      if (resultado.success) {
+        // Éxito: mostrar mensaje con ID
+        setSolicitudId(resultado.id || null);
+        setEnviado(true);
+        
+        // Resetear el formulario después de 3 segundos
+        setTimeout(() => {
+          setFormData(initialFormData);
+          setEnviado(false);
+          setSolicitudId(null);
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }, 5000);
+      } else {
+        // Error: mostrar mensajes de error
+        const mensajeError = resultado.errors && resultado.errors.length > 0
+          ? resultado.errors.map(e => e.message).join('. ')
+          : resultado.message;
+        
+        // Si es timeout, agregar nota especial
+        let mensajeFinal = mensajeError;
+        if (resultado.message && resultado.message.includes('tardando más')) {
+          mensajeFinal = mensajeError + '\n\n⚠️ Nota: La solicitud puede haberse procesado correctamente en el servidor a pesar del timeout. Por favor verifica.';
+        }
+        
+        setError(mensajeFinal);
         window.scrollTo({ top: 0, behavior: 'smooth' });
-      }, 3000);
-      
+      }
     } catch (error) {
       console.error("Error al enviar el formulario:", error);
-      alert("Hubo un error al enviar el formulario. Por favor intenta de nuevo.");
+      setError("Hubo un error inesperado al enviar el formulario. Por favor intenta de nuevo.");
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -139,6 +211,32 @@ export default function Home() {
       </div>
 
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        {/* Mensaje de error */}
+        {error && (
+          <div className="mb-8 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-2xl shadow-xl p-8 animate-fade-in">
+            <div className="flex items-start space-x-4">
+              <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center flex-shrink-0">
+                <svg className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </div>
+              <div className="flex-1">
+                <h3 className="text-xl font-bold mb-2">Error al Enviar la Solicitud</h3>
+                <p className="text-red-100">{error}</p>
+              </div>
+              <button
+                onClick={() => setError(null)}
+                className="text-white hover:text-red-200 transition-colors"
+                aria-label="Cerrar mensaje de error"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+          </div>
+        )}
+
         {/* Mensaje de éxito */}
         {enviado && (
           <div className="mb-8 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-2xl shadow-xl p-8 animate-fade-in">
@@ -150,7 +248,10 @@ export default function Home() {
               </div>
               <div>
                 <h3 className="text-2xl font-bold mb-1">¡Solicitud Enviada Exitosamente!</h3>
-                <p className="text-green-100">Tu solicitud ha sido registrada. Pronto nos pondremos en contacto contigo.</p>
+                <p className="text-green-100">
+                  Tu solicitud ha sido registrada con el ID: <strong className="font-bold">{solicitudId || 'N/A'}</strong>
+                </p>
+                <p className="text-green-100 mt-2">Pronto nos pondremos en contacto contigo.</p>
               </div>
             </div>
           </div>
@@ -158,6 +259,21 @@ export default function Home() {
 
         {/* Formulario */}
         <form onSubmit={handleSubmit} className="bg-white shadow-xl rounded-2xl p-8 md:p-10">
+          {/* Botón para llenar datos de prueba */}
+          <div className="mb-6 flex justify-end border-b border-gray-200 pb-4">
+            <button
+              type="button"
+              onClick={llenarDatosPrueba}
+              className="px-5 py-2.5 bg-gradient-to-r from-blue-50 to-indigo-50 hover:from-blue-100 hover:to-indigo-100 text-blue-700 text-sm font-semibold rounded-lg transition-all duration-200 flex items-center space-x-2 border border-blue-200 shadow-sm hover:shadow-md"
+              title="Llenar formulario con datos de prueba para testing"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+              </svg>
+              <span>⚡ Llenar con Datos de Prueba</span>
+            </button>
+          </div>
+
           {/* Información Personal */}
           <div className="mb-12">
             <div className="flex items-center mb-8">
@@ -716,13 +832,26 @@ export default function Home() {
             </div>
             <button
               type="submit"
-              className="group relative px-10 py-4 bg-gradient-to-r from-[#FF9B2D] to-[#FFB85C] hover:from-[#E6881A] hover:to-[#FF9B2D] text-white font-bold text-lg rounded-xl shadow-xl transform transition-all duration-300 hover:scale-105 hover:shadow-2xl focus:outline-none focus:ring-4 focus:ring-[#FF9B2D]/50"
+              disabled={isLoading}
+              className="group relative px-10 py-4 bg-gradient-to-r from-[#FF9B2D] to-[#FFB85C] hover:from-[#E6881A] hover:to-[#FF9B2D] text-white font-bold text-lg rounded-xl shadow-xl transform transition-all duration-300 hover:scale-105 hover:shadow-2xl focus:outline-none focus:ring-4 focus:ring-[#FF9B2D]/50 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
             >
               <span className="flex items-center space-x-2">
-                <span>Enviar Solicitud</span>
-                <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3"/>
-                </svg>
+                {isLoading ? (
+                  <>
+                    <svg className="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    <span>Enviando...</span>
+                  </>
+                ) : (
+                  <>
+                    <span>Enviar Solicitud</span>
+                    <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3"/>
+                    </svg>
+                  </>
+                )}
               </span>
             </button>
           </div>

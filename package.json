@@ -9,9 +9,6 @@
     "lint": "eslint"
   },
   "dependencies": {
-    "cors": "^2.8.5",
-    "express": "^5.1.0",
-    "firebase-admin": "^13.5.0",
     "google-auth-library": "^10.5.0",
     "next": "16.0.1",
     "react": "19.2.0",
