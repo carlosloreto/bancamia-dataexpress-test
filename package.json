@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "node server.js",
-    "lint": "eslint"
+    "lint": "eslint",
+    "gcp-build": "npm run build"
   },
   "dependencies": {
     "axios": "^1.13.2",
