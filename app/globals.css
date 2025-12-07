@@ -5,6 +5,9 @@
   --foreground: #171717;
   
   /* Colores corporativos Bancamía */
+  --bancamia-red: #b5121b;
+  --bancamia-red-light: #d91e2a;
+  --bancamia-red-dark: #8e0e15;
   --bancamia-orange: #FF9B2D;
   --bancamia-orange-light: #FFB85C;
   --bancamia-orange-dark: #E6881A;
@@ -18,6 +21,17 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  
+  /* Colores corporativos Bancamía */
+  --color-bancamia-rojo: #b5121b;
+  --color-bancamia-rojo-claro: #d91e2a;
+  --color-bancamia-rojo-oscuro: #8e0e15;
+  --color-bancamia-naranja: #FF9B2D;
+  --color-bancamia-naranja-claro: #FFB85C;
+  --color-bancamia-naranja-oscuro: #E6881A;
+  --color-bancamia-azul: #1E3A5F;
+  --color-bancamia-azul-claro: #2D5F8D;
+  --color-bancamia-azul-oscuro: #0F2942;
 }
 
 @media (prefers-color-scheme: dark) {

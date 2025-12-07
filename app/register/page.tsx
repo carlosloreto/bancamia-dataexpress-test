@@ -108,7 +108,7 @@ export default function RegisterPage() {
         </div>
 
         {/* Formulario */}
-        <form className="mt-8 space-y-6 bg-white rounded-lg shadow-xl p-8" onSubmit={handleSubmit}>
+        <form className="mt-8 space-y-6 bg-white rounded-md shadow-xl p-8" onSubmit={handleSubmit}>
           <div className="space-y-4">
             {/* Nombre */}
             <div>
@@ -123,7 +123,7 @@ export default function RegisterPage() {
                 required
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-bancamia-naranja focus:border-transparent focus:z-10 sm:text-sm"
+                className="appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-bancamia-rojo focus:border-transparent focus:z-10 sm:text-sm"
                 placeholder="Juan Pérez"
                 disabled={isSubmitting}
               />
@@ -142,7 +142,7 @@ export default function RegisterPage() {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-bancamia-naranja focus:border-transparent focus:z-10 sm:text-sm"
+                className="appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-bancamia-rojo focus:border-transparent focus:z-10 sm:text-sm"
                 placeholder="tu@email.com"
                 disabled={isSubmitting}
               />
@@ -161,7 +161,7 @@ export default function RegisterPage() {
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-bancamia-naranja focus:border-transparent focus:z-10 sm:text-sm"
+                className="appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-bancamia-rojo focus:border-transparent focus:z-10 sm:text-sm"
                 placeholder="••••••••"
                 disabled={isSubmitting}
               />
@@ -183,7 +183,7 @@ export default function RegisterPage() {
                 required
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
-                className="appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-bancamia-naranja focus:border-transparent focus:z-10 sm:text-sm"
+                className="appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-bancamia-rojo focus:border-transparent focus:z-10 sm:text-sm"
                 placeholder="••••••••"
                 disabled={isSubmitting}
               />
@@ -211,7 +211,7 @@ export default function RegisterPage() {
             <button
               type="submit"
               disabled={isSubmitting || !name || !email || !password || !confirmPassword}
-              className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-gradient-to-r from-bancamia-naranja to-bancamia-naranja-claro hover:from-bancamia-naranja-oscuro hover:to-bancamia-naranja focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-bancamia-naranja disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-lg"
+              className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-gradient-to-r from-bancamia-rojo to-bancamia-rojo-claro hover:from-bancamia-rojo-oscuro hover:to-bancamia-rojo focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-bancamia-rojo disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-lg"
             >
               {isSubmitting ? (
                 <>
@@ -231,7 +231,7 @@ export default function RegisterPage() {
           <div className="text-center">
             <p className="text-sm text-gray-600">
               ¿Ya tienes cuenta?{' '}
-              <Link href="/login" className="font-medium text-bancamia-naranja hover:text-bancamia-naranja-oscuro">
+              <Link href="/login" className="font-medium text-bancamia-rojo hover:text-bancamia-rojo-oscuro">
                 Inicia sesión aquí
               </Link>
             </p>
