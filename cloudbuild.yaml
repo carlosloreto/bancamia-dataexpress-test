@@ -1,5 +1,14 @@
 steps:
-  # Build the Docker image with build args
+  # Validar variables de entorno (Debug)
+  - name: "bash"
+    args:
+      - "-c"
+      - |
+        echo "🔍 [DEBUG] Validando variables de sustitución..."
+        if [ -z "${_FIREBASE_API_KEY}" ]; then echo "❌ _FIREBASE_API_KEY está VACÍA"; else echo "✅ _FIREBASE_API_KEY detectada"; fi
+        if [ -z "${_FIREBASE_AUTH_DOMAIN}" ]; then echo "❌ _FIREBASE_AUTH_DOMAIN está VACÍA"; else echo "✅ _FIREBASE_AUTH_DOMAIN detectada"; fi
+        if [ -z "${_FIREBASE_PROJECT_ID}" ]; then echo "❌ _FIREBASE_PROJECT_ID está VACÍA"; else echo "✅ _FIREBASE_PROJECT_ID detectada"; fi
+        if [ -z "${_API_URL}" ]; then echo "❌ _API_URL está VACÍA"; else echo "✅ _API_URL detectada"; fi
   - name: "gcr.io/cloud-builders/docker"
     args:
       - "build"
