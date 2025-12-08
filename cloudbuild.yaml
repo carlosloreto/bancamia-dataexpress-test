@@ -1,30 +1,33 @@
 steps:
-  # Create .env.production from secrets
-  - name: "gcr.io/google.com/cloudsdktool/cloud-sdk"
-    entrypoint: "bash"
+  # Build the Docker image with build args
+  - name: "gcr.io/cloud-builders/docker"
     args:
-      - "-c"
-      - |
-        cat > .env.production <<EOF
-        NEXT_PUBLIC_FIREBASE_API_KEY=$$FIREBASE_API_KEY
-        NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=$$FIREBASE_AUTH_DOMAIN
-        NEXT_PUBLIC_FIREBASE_PROJECT_ID=$$FIREBASE_PROJECT_ID
-        NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=$$FIREBASE_STORAGE_BUCKET
-        NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=$$FIREBASE_MESSAGING_SENDER_ID
-        NEXT_PUBLIC_FIREBASE_APP_ID=$$FIREBASE_APP_ID
-        NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID=$$FIREBASE_MEASUREMENT_ID
-        NEXT_PUBLIC_API_URL=$$API_URL
-        EOF
-        cat .env.production
-    secretEnv:
-      - FIREBASE_API_KEY
-      - FIREBASE_AUTH_DOMAIN
-      - FIREBASE_PROJECT_ID
-      - FIREBASE_STORAGE_BUCKET
-      - FIREBASE_MESSAGING_SENDER_ID
-      - FIREBASE_APP_ID
-      - FIREBASE_MEASUREMENT_ID
-      - API_URL
+      - "build"
+      - "-t"
+      - "${_REGION}-docker.pkg.dev/$PROJECT_ID/cloud-run-source-deploy/${_SERVICE_NAME}:$SHORT_SHA"
+      - "--build-arg"
+      - "NEXT_PUBLIC_FIREBASE_API_KEY=${_FIREBASE_API_KEY}"
+      - "--build-arg"
+      - "NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=${_FIREBASE_AUTH_DOMAIN}"
+      - "--build-arg"
+      - "NEXT_PUBLIC_FIREBASE_PROJECT_ID=${_FIREBASE_PROJECT_ID}"
+      - "--build-arg"
+      - "NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=${_FIREBASE_STORAGE_BUCKET}"
+      - "--build-arg"
+      - "NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=${_FIREBASE_MESSAGING_SENDER_ID}"
+      - "--build-arg"
+      - "NEXT_PUBLIC_FIREBASE_APP_ID=${_FIREBASE_APP_ID}"
+      - "--build-arg"
+      - "NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID=${_FIREBASE_MEASUREMENT_ID}"
+      - "--build-arg"
+      - "NEXT_PUBLIC_API_URL=${_API_URL}"
+      - "."
+
+  # Push the image to Artifact Registry
+  - name: "gcr.io/cloud-builders/docker"
+    args:
+      - "push"
+      - "${_REGION}-docker.pkg.dev/$PROJECT_ID/cloud-run-source-deploy/${_SERVICE_NAME}:$SHORT_SHA"
 
   # Deploy to Cloud Run
   - name: "gcr.io/google.com/cloudsdktool/cloud-sdk"
@@ -32,34 +35,31 @@ steps:
     args:
       - "run"
       - "deploy"
-      - "bancamia-frontend"
-      - "--source=."
-      - "--region=southamerica-east1"
+      - "${_SERVICE_NAME}"
+      - "--image=${_REGION}-docker.pkg.dev/$PROJECT_ID/cloud-run-source-deploy/${_SERVICE_NAME}:$SHORT_SHA"
+      - "--region=${_REGION}"
+      - "--platform=managed"
       - "--allow-unauthenticated"
       - "--port=8080"
       - "--timeout=300"
       - "--memory=1Gi"
 
-availableSecrets:
-  secretManager:
-    - versionName: projects/$PROJECT_ID/secrets/firebase-api-key/versions/latest
-      env: FIREBASE_API_KEY
-    - versionName: projects/$PROJECT_ID/secrets/firebase-auth-domain/versions/latest
-      env: FIREBASE_AUTH_DOMAIN
-    - versionName: projects/$PROJECT_ID/secrets/firebase-project-id/versions/latest
-      env: FIREBASE_PROJECT_ID
-    - versionName: projects/$PROJECT_ID/secrets/firebase-storage-bucket/versions/latest
-      env: FIREBASE_STORAGE_BUCKET
-    - versionName: projects/$PROJECT_ID/secrets/firebase-messaging-sender-id/versions/latest
-      env: FIREBASE_MESSAGING_SENDER_ID
-    - versionName: projects/$PROJECT_ID/secrets/firebase-app-id/versions/latest
-      env: FIREBASE_APP_ID
-    - versionName: projects/$PROJECT_ID/secrets/firebase-measurement-id/versions/latest
-      env: FIREBASE_MEASUREMENT_ID
-    - versionName: projects/$PROJECT_ID/secrets/api-url/versions/latest
-      env: API_URL
+images:
+  - "${_REGION}-docker.pkg.dev/$PROJECT_ID/cloud-run-source-deploy/${_SERVICE_NAME}:$SHORT_SHA"
+
+# Default substitution values
+# IMPORTANT: Override these in the Cloud Build trigger configuration
+substitutions:
+  _SERVICE_NAME: bancamia-frontend
+  _REGION: southamerica-east1
+  _FIREBASE_API_KEY: ""
+  _FIREBASE_AUTH_DOMAIN: ""
+  _FIREBASE_PROJECT_ID: ""
+  _FIREBASE_STORAGE_BUCKET: ""
+  _FIREBASE_MESSAGING_SENDER_ID: ""
+  _FIREBASE_APP_ID: ""
+  _FIREBASE_MEASUREMENT_ID: ""
+  _API_URL: ""
 
 options:
   logging: CLOUD_LOGGING_ONLY
-
-serviceAccount: projects/bancamia-dataexpress/serviceAccounts/773449658013@cloudbuild.gserviceaccount.com
