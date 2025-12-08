@@ -35,7 +35,7 @@ export async function GET(request: NextRequest) {
     
     // Asegurar que la URL no termine con /
     const apiUrlClean = apiUrl.replace(/\/$/, '');
-    const url = `${apiUrlClean}/api/v1/solicitudes`;
+    const url = `${apiUrlClean}/api/v3/solicitudes`;
 
     // Obtener el token de autenticación del header del request del cliente
     const authHeader = request.headers.get('authorization');
@@ -222,7 +222,7 @@ export async function POST(request: NextRequest) {
     
     // Asegurar que la URL no termine con /
     const apiUrlClean = apiUrl.replace(/\/$/, '');
-    const url = `${apiUrlClean}/api/v1/solicitudes`;
+    const url = `${apiUrlClean}/api/v3/solicitudes`;
 
     console.log(`[API Proxy] Enviando solicitud a: ${url}`);
     console.log(`[API Proxy] API URL configurada: ${apiUrl}`);
