@@ -12,7 +12,7 @@ Estos son endpoints que se ejecutan en el mismo servidor Next.js:
 - **Ubicación**: `app/api/solicitudes/route.ts`
 - **Llamado desde**: 
   - `app/admin/page.tsx` (línea 50)
-- **Llama a**: `${NEXT_PUBLIC_API_URL}/api/v1/solicitudes` (GET)
+- **Llama a**: `${NEXT_PUBLIC_API_URL}/api/v3/solicitudes` (GET)
 
 - **Método**: `POST`
 - **Descripción**: Proxy para crear nueva solicitud
@@ -20,7 +20,7 @@ Estos son endpoints que se ejecutan en el mismo servidor Next.js:
 - **Llamado desde**: 
   - `lib/api.ts` → `enviarSolicitudCredito()` (línea 290)
   - `app/formulario/page.tsx` (línea 343)
-- **Llama a**: `${NEXT_PUBLIC_API_URL}/api/v1/solicitudes` (POST)
+- **Llama a**: `${NEXT_PUBLIC_API_URL}/api/v3/solicitudes` (POST)
 
 ### 2. `/api/user-info`
 - **Método**: `GET`
@@ -50,7 +50,7 @@ Estos son endpoints que se ejecutan en el mismo servidor Next.js:
 
 Estos son endpoints que se llaman a la API externa configurada en `NEXT_PUBLIC_API_URL`:
 
-### 1. `/api/v1/solicitudes`
+### 1. `/api/v3/solicitudes`
 - **Método**: `GET`
 - **Descripción**: Obtener lista de solicitudes de crédito
 - **Llamado desde**: `app/api/solicitudes/route.ts` (línea 38, 70)
@@ -66,7 +66,7 @@ Estos son endpoints que se llaman a la API externa configurada en `NEXT_PUBLIC_A
   - `Authorization: Bearer {token}` (opcional)
 - **Body**: Datos de la solicitud de crédito (JSON)
 
-### 2. `/api/v1/auth/login`
+### 2. `/api/v3/auth/login`
 - **Método**: `POST`
 - **Descripción**: Autenticar usuario con Firebase idToken
 - **Llamado desde**: `lib/auth.service.ts` → `login()` (línea 97)
@@ -80,7 +80,7 @@ Estos son endpoints que se llaman a la API externa configurada en `NEXT_PUBLIC_A
   }
   ```
 
-### 3. `/api/v1/auth/register`
+### 3. `/api/v3/auth/register`
 - **Método**: `POST`
 - **Descripción**: Registrar nuevo usuario
 - **Llamado desde**: `lib/auth.service.ts` → `register()` (línea 169)
@@ -96,7 +96,7 @@ Estos son endpoints que se llaman a la API externa configurada en `NEXT_PUBLIC_A
   }
   ```
 
-### 4. `/api/v1/auth/verify`
+### 4. `/api/v3/auth/verify`
 - **Método**: `POST`
 - **Descripción**: Verificar idToken de Firebase
 - **Llamado desde**: `lib/auth.service.ts` → `verify()` (línea 222)
@@ -110,7 +110,7 @@ Estos son endpoints que se llaman a la API externa configurada en `NEXT_PUBLIC_A
   }
   ```
 
-### 5. `/api/v1/auth/me`
+### 5. `/api/v3/auth/me`
 - **Método**: `GET`
 - **Descripción**: Obtener perfil del usuario autenticado
 - **Llamado desde**: `lib/auth.service.ts` → `getProfile()` (línea 273)
@@ -154,7 +154,7 @@ El proyecto usa un cliente API centralizado en `lib/api-client.ts` que:
 ## Flujo de Autenticación
 
 1. Usuario se autentica con Firebase Auth (obtiene `idToken`)
-2. Frontend envía `idToken` a `/api/v1/auth/login` o `/api/v1/auth/register`
+2. Frontend envía `idToken` a `/api/v3/auth/login` o `/api/v3/auth/register`
 3. Backend valida el token y retorna información del usuario
 4. Para peticiones subsecuentes, el `api-client` agrega automáticamente el `idToken` en el header `Authorization`
 5. Si el token expira (401), el interceptor intenta renovarlo automáticamente

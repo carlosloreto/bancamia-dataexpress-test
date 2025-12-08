@@ -35,7 +35,7 @@ export interface RegisterData {
  * FLUJO DE AUTENTICACIÓN:
  * 1. Usuario ingresa email/password en el frontend
  * 2. Frontend autentica con Firebase Auth (obtiene idToken)
- * 3. Frontend envía idToken a POST /api/v1/auth/login
+ * 3. Frontend envía idToken a POST /api/v3/auth/login
  * 4. Backend valida el token y retorna user + token JWT
  * 5. Frontend usa idToken de Firebase para peticiones protegidas
  * 6. Firebase renueva automáticamente el token cuando expire
@@ -94,7 +94,7 @@ class AuthService {
       console.log('🎫 Token de Firebase obtenido');
       
       // 3. Enviar idToken al backend para sincronizar con Firestore
-      const response = await api.post<LoginResponse>('/api/v1/auth/login', {
+      const response = await api.post<LoginResponse>('/api/v3/auth/login', {
         idToken,
       });
       
@@ -166,7 +166,7 @@ class AuthService {
       // 3. Registrar en el backend con solo { email, password, displayName }
       // El idToken se envía en el header Authorization automáticamente por api-client
       // api-client obtiene el token de auth.currentUser automáticamente
-      const response = await api.post<{ user: User }>('/api/v1/auth/register', {
+      const response = await api.post<{ user: User }>('/api/v3/auth/register', {
         email: data.email,
         password: data.password,
         displayName: data.name,
@@ -219,7 +219,7 @@ class AuthService {
     try {
       console.log('🔍 Verificando token...');
       
-      const response = await api.post<{ user: User }>('/api/v1/auth/verify', {
+      const response = await api.post<{ user: User }>('/api/v3/auth/verify', {
         idToken,
       });
       
@@ -270,7 +270,7 @@ class AuthService {
    */
   async getProfile(): Promise<User> {
     try {
-      const response = await api.get<{ user: User }>('/api/v1/auth/me');
+      const response = await api.get<{ user: User }>('/api/v3/auth/me');
       
       if (!response.success) {
         throw new Error(response.error?.message || 'Error al obtener perfil');
