@@ -7,17 +7,18 @@ import { NextResponse } from 'next/server';
 export async function GET() {
   try {
     // Obtener URL de la API desde variables de entorno
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+    // API_URL (sin NEXT_PUBLIC_) se lee en runtime, NEXT_PUBLIC_API_URL se hornea en build
+    const apiUrl = process.env.API_URL || process.env.NEXT_PUBLIC_API_URL;
     
     if (!apiUrl) {
       return NextResponse.json(
         {
           success: false,
-          error: 'NEXT_PUBLIC_API_URL no está configurada en las variables de entorno',
+          error: 'API_URL no está configurada en las variables de entorno',
           config: {
             envVarSet: false,
             envVarValue: 'no configurada',
-            message: 'Configura NEXT_PUBLIC_API_URL en .env',
+            message: 'Configura API_URL en Cloud Run o NEXT_PUBLIC_API_URL en .env',
           },
           timestamp: new Date().toISOString(),
         },
@@ -48,8 +49,9 @@ export async function GET() {
         response: data,
       },
       config: {
-        envVarSet: !!process.env.NEXT_PUBLIC_API_URL,
-        envVarValue: process.env.NEXT_PUBLIC_API_URL || 'usando valor por defecto',
+        apiUrlSet: !!(process.env.API_URL || process.env.NEXT_PUBLIC_API_URL),
+        apiUrlSource: process.env.API_URL ? 'API_URL (runtime)' : 'NEXT_PUBLIC_API_URL (build)',
+        envVarValue: process.env.API_URL || process.env.NEXT_PUBLIC_API_URL || 'no configurada',
       },
       timestamp: new Date().toISOString(),
     });
@@ -58,10 +60,11 @@ export async function GET() {
       {
         success: false,
         error: error instanceof Error ? error.message : 'Error desconocido',
-        apiUrl: process.env.NEXT_PUBLIC_API_URL || 'no configurada',
+        apiUrl: process.env.API_URL || process.env.NEXT_PUBLIC_API_URL || 'no configurada',
         config: {
-          envVarSet: !!process.env.NEXT_PUBLIC_API_URL,
-          envVarValue: process.env.NEXT_PUBLIC_API_URL || 'no configurada',
+          apiUrlSet: !!(process.env.API_URL || process.env.NEXT_PUBLIC_API_URL),
+          apiUrlSource: process.env.API_URL ? 'API_URL (runtime)' : 'NEXT_PUBLIC_API_URL (build)',
+          envVarValue: process.env.API_URL || process.env.NEXT_PUBLIC_API_URL || 'no configurada',
         },
         timestamp: new Date().toISOString(),
       },

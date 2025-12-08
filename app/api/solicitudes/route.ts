@@ -16,7 +16,8 @@ export async function GET(request: NextRequest) {
   
   try {
     // Obtener URL de la API desde variables de entorno
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+    // API_URL (sin NEXT_PUBLIC_) se lee en runtime, NEXT_PUBLIC_API_URL se hornea en build
+    const apiUrl = process.env.API_URL || process.env.NEXT_PUBLIC_API_URL;
     
     if (!apiUrl) {
       console.error('[API Proxy] ERROR: NEXT_PUBLIC_API_URL no está configurada en las variables de entorno');
@@ -203,7 +204,8 @@ export async function POST(request: NextRequest) {
     const datos = await request.json();
 
     // Obtener URL de la API desde variables de entorno
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+    // API_URL (sin NEXT_PUBLIC_) se lee en runtime, NEXT_PUBLIC_API_URL se hornea en build
+    const apiUrl = process.env.API_URL || process.env.NEXT_PUBLIC_API_URL;
     
     if (!apiUrl) {
       console.error('[API Proxy] ERROR: NEXT_PUBLIC_API_URL no está configurada en las variables de entorno');
@@ -363,7 +365,7 @@ export async function POST(request: NextRequest) {
         console.error('[API Proxy] Error SSL/TLS detectado');
         console.error('[API Proxy] Código del error:', errorCode || causeCode);
         console.error('[API Proxy] Verifica que la URL de la API sea correcta y use HTTPS');
-        console.error('[API Proxy] URL que se intentó usar:', process.env.NEXT_PUBLIC_API_URL || 'no configurada');
+        console.error('[API Proxy] URL que se intentó usar:', process.env.API_URL || process.env.NEXT_PUBLIC_API_URL || 'no configurada');
         return NextResponse.json(
           {
             success: false,
@@ -372,7 +374,7 @@ export async function POST(request: NextRequest) {
               message: 'Error de conexión SSL con el servidor. Verifica que la URL de la API sea correcta y use HTTPS.',
               statusCode: 503,
               details: 'El servidor puede no estar respondiendo con HTTPS correctamente. Verifica la URL en .env',
-              url: process.env.NEXT_PUBLIC_API_URL || 'no configurada',
+              url: process.env.API_URL || process.env.NEXT_PUBLIC_API_URL || 'no configurada',
             },
           },
           { status: 503 }

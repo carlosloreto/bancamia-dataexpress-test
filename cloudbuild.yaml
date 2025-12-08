@@ -43,6 +43,7 @@ steps:
       - "--port=8080"
       - "--timeout=300"
       - "--memory=1Gi"
+      - "--set-env-vars=API_URL=${_API_URL}"
 
 images:
   - "${_REGION}-docker.pkg.dev/$PROJECT_ID/cloud-run-source-deploy/${_SERVICE_NAME}:$SHORT_SHA"
