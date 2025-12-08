@@ -92,6 +92,15 @@ function AdminContent() {
     }
   };
 
+  // Función helper para normalizar fechas a solo fecha (sin hora) en hora local
+  const normalizarFecha = (fecha: string | Date | undefined): Date | null => {
+    if (!fecha) return null;
+    const fechaObj = fecha instanceof Date ? fecha : new Date(fecha);
+    if (isNaN(fechaObj.getTime())) return null;
+    // Crear nueva fecha solo con año, mes y día en hora local
+    return new Date(fechaObj.getFullYear(), fechaObj.getMonth(), fechaObj.getDate());
+  };
+
   const solicitudesFiltradas = solicitudes.filter((s) => {
     // Filtro por texto (nombre, documento, email)
     const filtroTexto = filtro.toLowerCase();
@@ -103,19 +112,25 @@ function AdminContent() {
     // Filtro por fecha desde
     let coincideFechaDesde = true;
     if (fechaDesde && s.fechaSolicitud) {
-      const fechaSolicitud = new Date(s.fechaSolicitud);
-      const desde = new Date(fechaDesde);
-      desde.setHours(0, 0, 0, 0);
-      coincideFechaDesde = fechaSolicitud >= desde;
+      const fechaSolicitud = normalizarFecha(s.fechaSolicitud);
+      const desde = normalizarFecha(fechaDesde);
+      if (fechaSolicitud && desde) {
+        coincideFechaDesde = fechaSolicitud >= desde;
+      } else {
+        coincideFechaDesde = false;
+      }
     }
     
     // Filtro por fecha hasta
     let coincideFechaHasta = true;
     if (fechaHasta && s.fechaSolicitud) {
-      const fechaSolicitud = new Date(s.fechaSolicitud);
-      const hasta = new Date(fechaHasta);
-      hasta.setHours(23, 59, 59, 999);
-      coincideFechaHasta = fechaSolicitud <= hasta;
+      const fechaSolicitud = normalizarFecha(s.fechaSolicitud);
+      const hasta = normalizarFecha(fechaHasta);
+      if (fechaSolicitud && hasta) {
+        coincideFechaHasta = fechaSolicitud <= hasta;
+      } else {
+        coincideFechaHasta = false;
+      }
     }
     
     return coincideTexto && coincideFechaDesde && coincideFechaHasta;
