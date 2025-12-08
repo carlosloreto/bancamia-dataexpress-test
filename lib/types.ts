@@ -1,6 +1,13 @@
 // Tipos de datos para el formulario de autorización de datos Bancamía
 // Basado en el formulario oficial de Google Forms
 
+export interface Documento {
+  fileName: string;
+  originalName: string;
+  path: string;
+  url: string;
+}
+
 export interface AutorizacionDatos {
   id?: string;
   fechaSolicitud?: string;
@@ -23,6 +30,15 @@ export interface AutorizacionDatos {
   ciudadNegocio: string;
   direccionNegocio: string;
   celularNegocio: string;
+  
+  // Documento PDF
+  documento?: Documento;
+  
+  // Campos adicionales de la base de datos
+  estado?: string;
+  userId?: string;
+  createdAt?: string | Date;
+  updatedAt?: string | Date;
 }
 
 export const initialFormData: AutorizacionDatos = {
