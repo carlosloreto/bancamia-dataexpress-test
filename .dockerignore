@@ -48,3 +48,4 @@ CICD_SETUP.md
 
 # Build artifacts
 tsconfig.tsbuildinfo
+# Force rebuild with correct env vars
