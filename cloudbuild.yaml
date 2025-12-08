@@ -61,3 +61,5 @@ availableSecrets:
 
 options:
   logging: CLOUD_LOGGING_ONLY
+
+serviceAccount: projects/bancamia-dataexpress/serviceAccounts/773449658013@cloudbuild.gserviceaccount.com
