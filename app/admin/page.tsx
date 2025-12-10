@@ -95,6 +95,14 @@ function AdminContent() {
   // Función helper para normalizar fechas a solo fecha (sin hora) en hora local
   const normalizarFecha = (fecha: string | Date | undefined): Date | null => {
     if (!fecha) return null;
+    
+    // Si es un string en formato YYYY-MM-DD (del input date), parsearlo manualmente
+    // para evitar problemas de zona horaria con UTC
+    if (typeof fecha === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(fecha)) {
+      const [year, month, day] = fecha.split('-').map(Number);
+      return new Date(year, month - 1, day);
+    }
+    
     const fechaObj = fecha instanceof Date ? fecha : new Date(fecha);
     if (isNaN(fechaObj.getTime())) return null;
     // Crear nueva fecha solo con año, mes y día en hora local
@@ -263,45 +271,63 @@ function AdminContent() {
     }
   };
 
+  // Función helper para escapar valores CSV (maneja comas, comillas y saltos de línea)
+  const escaparCSV = (valor: string | number | undefined | null): string => {
+    if (valor === null || valor === undefined) return "";
+    const str = String(valor);
+    // Si contiene comas, comillas o saltos de línea, envolver en comillas y escapar comillas internas
+    if (str.includes(",") || str.includes('"') || str.includes("\n") || str.includes("\r")) {
+      return `"${str.replace(/"/g, '""')}"`;
+    }
+    return str;
+  };
+
   const exportarCSV = () => {
+    // Headers solo con los campos que realmente se capturan en el formulario (AutorizacionDatos)
     const headers = [
-      "ID",
-      "Fecha",
-      "Nombre",
+      "Fecha Solicitud",
+      "Nombre Completo",
       "Tipo Documento",
       "Numero Documento",
       "Fecha Nacimiento",
+      "Fecha Expedicion Documento",
       "Email",
       "Ciudad Negocio",
       "Direccion Negocio",
       "Celular Negocio",
-      "Autorizacion Datos",
+      "Autorizacion Tratamiento Datos",
       "Autorizacion Contacto",
     ];
 
-    const rows = solicitudes.map((s) => [
-      s.id || "",
-      formatearFecha(s.fechaSolicitud),
-      s.nombreCompleto,
-      s.tipoDocumento,
-      s.numeroDocumento,
-      s.fechaNacimiento || "N/A",
-      s.email,
-      'ciudadNegocio' in s ? obtenerNombreCiudad(s.ciudadNegocio) : 'N/A',
-      'direccionNegocio' in s ? (s.direccionNegocio || 'N/A') : 'N/A',
-      'celularNegocio' in s ? (s.celularNegocio || 'N/A') : 'N/A',
-      'autorizacionTratamientoDatos' in s ? (s.autorizacionTratamientoDatos ? 'Sí' : 'No') : 'N/A',
-      'autorizacionContacto' in s ? (s.autorizacionContacto ? 'Sí' : 'No') : 'N/A',
-    ]);
+    const rows = solicitudes.map((s) => {
+      return [
+        escaparCSV(formatearFecha(s.fechaSolicitud)),
+        escaparCSV(s.nombreCompleto),
+        escaparCSV(s.tipoDocumento),
+        escaparCSV(s.numeroDocumento),
+        escaparCSV(s.fechaNacimiento),
+        escaparCSV(esAutorizacionDatos(s) ? s.fechaExpedicionDocumento : ""),
+        escaparCSV(s.email),
+        escaparCSV(esAutorizacionDatos(s) ? obtenerNombreCiudad(s.ciudadNegocio) : ""),
+        escaparCSV(esAutorizacionDatos(s) ? s.direccionNegocio : ""),
+        escaparCSV(esAutorizacionDatos(s) ? s.celularNegocio : ""),
+        escaparCSV(esAutorizacionDatos(s) ? (s.autorizacionTratamientoDatos ? "Sí" : "No") : ""),
+        escaparCSV(esAutorizacionDatos(s) ? (s.autorizacionContacto ? "Sí" : "No") : ""),
+      ];
+    });
 
+    // Crear contenido CSV con BOM para Excel (UTF-8)
     const csvContent =
-      "data:text/csv;charset=utf-8," +
+      "\uFEFF" + // BOM para Excel
       [headers.join(","), ...rows.map((r) => r.join(","))].join("\n");
 
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
     const link = document.createElement("a");
-    link.href = encodeURI(csvContent);
+    const url = URL.createObjectURL(blob);
+    link.href = url;
     link.download = `autorizaciones_${new Date().toISOString().split("T")[0]}.csv`;
     link.click();
+    URL.revokeObjectURL(url);
   };
 
   const handleLogout = async () => {

@@ -18,6 +18,33 @@ const nextConfig: NextConfig = {
   turbopack: {
     root: path.resolve(__dirname),
   } as { root: string },
+  // Headers de seguridad - se aplican a todas las respuestas
+  async headers() {
+    return [
+      {
+        // Aplicar a todas las rutas
+        source: '/:path*',
+        headers: [
+          {
+            key: 'X-Frame-Options',
+            value: 'DENY',
+          },
+          {
+            key: 'X-Content-Type-Options',
+            value: 'nosniff',
+          },
+          {
+            key: 'Referrer-Policy',
+            value: 'strict-origin-when-cross-origin',
+          },
+          {
+            key: 'Permissions-Policy',
+            value: 'camera=(), microphone=(), geolocation=()',
+          },
+        ],
+      },
+    ];
+  },
 };
 
 export default nextConfig;
