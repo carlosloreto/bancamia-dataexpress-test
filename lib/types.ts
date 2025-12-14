@@ -31,6 +31,9 @@ export interface AutorizacionDatos {
   direccionNegocio: string;
   celularNegocio: string;
   
+  // Referencia (numeroDocumento + 4 dígitos consecutivos)
+  referencia?: string;
+  
   // Documento PDF
   documento?: Documento;
   

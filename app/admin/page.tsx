@@ -109,33 +109,125 @@ function AdminContent() {
     return new Date(fechaObj.getFullYear(), fechaObj.getMonth(), fechaObj.getDate());
   };
 
+  // Función helper para formatear fecha
+  const formatearFecha = (fecha: string | undefined) => {
+    if (!fecha) return "N/A";
+    return new Date(fecha).toLocaleDateString("es-CO", {
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    });
+  };
+
+  // Función helper para obtener el teléfono (puede ser telefono o celularNegocio)
+  const obtenerTelefono = (s: SolicitudCredito | AutorizacionDatos): string => {
+    if ('telefono' in s && s.telefono) return s.telefono;
+    if ('celularNegocio' in s && s.celularNegocio) return s.celularNegocio;
+    return "N/A";
+  };
+
+  // Función helper para verificar si es AutorizacionDatos
+  const esAutorizacionDatos = (s: SolicitudCredito | AutorizacionDatos): s is AutorizacionDatos => {
+    return 'ciudadNegocio' in s && 'direccionNegocio' in s && 'celularNegocio' in s;
+  };
+
+  // Función helper para obtener el nombre de la ciudad de negocio
+  const obtenerNombreCiudad = (codigo: string | undefined): string => {
+    if (!codigo) return "N/A";
+    const ciudad = ciudadesNegocio.find(c => c.codigo === codigo);
+    return ciudad ? ciudad.nombre : codigo;
+  };
+
   const solicitudesFiltradas = solicitudes.filter((s) => {
-    // Filtro por texto (nombre, documento, email)
+    // Filtro por texto - busca en todos los campos visibles en la tabla
     const filtroTexto = filtro.toLowerCase();
-    const coincideTexto = !filtro || 
-      (s.nombreCompleto && s.nombreCompleto.toLowerCase().includes(filtroTexto)) ||
-      (s.numeroDocumento && s.numeroDocumento.includes(filtro)) ||
-      (s.email && s.email.toLowerCase().includes(filtroTexto));
     
-    // Filtro por fecha desde
+    // Si no hay filtro de texto, pasar todas las solicitudes
+    let coincideTexto = !filtro;
+    
+    if (filtro) {
+      // Buscar en nombre completo
+      const coincideNombre = s.nombreCompleto && s.nombreCompleto.toLowerCase().includes(filtroTexto);
+      
+      // Buscar en número de documento
+      const coincideDocumento = s.numeroDocumento && s.numeroDocumento.includes(filtro);
+      
+      // Buscar en email
+      const coincideEmail = s.email && s.email.toLowerCase().includes(filtroTexto);
+      
+      // Buscar en ciudad de negocio (nombre y código)
+      let coincideCiudad = false;
+      if (esAutorizacionDatos(s) && s.ciudadNegocio) {
+        const nombreCiudad = obtenerNombreCiudad(s.ciudadNegocio).toLowerCase();
+        coincideCiudad = nombreCiudad.includes(filtroTexto) || s.ciudadNegocio.includes(filtro);
+      }
+      
+      // Buscar en celular/telefono
+      const telefono = obtenerTelefono(s);
+      const coincideTelefono = telefono !== "N/A" && telefono.includes(filtro);
+      
+      // Buscar en fecha formateada
+      let coincideFecha = false;
+      if (s.fechaSolicitud) {
+        const fechaFormateada = formatearFecha(s.fechaSolicitud).toLowerCase();
+        coincideFecha = fechaFormateada.includes(filtroTexto);
+      }
+      
+      // Buscar en tipo de documento
+      const coincideTipoDoc = s.tipoDocumento && s.tipoDocumento.toLowerCase().includes(filtroTexto);
+      
+      // Buscar en referencia
+      const coincideReferencia = 'referencia' in s && s.referencia && String(s.referencia).includes(filtro);
+      
+      // Coincide si alguno de los campos coincide
+      coincideTexto = coincideNombre || coincideDocumento || coincideEmail || 
+                      coincideCiudad || coincideTelefono || coincideFecha || coincideTipoDoc || coincideReferencia;
+    }
+    
+    // Función helper para extraer solo la fecha en formato YYYY-MM-DD
+    const extraerFechaString = (fecha: string | Date | undefined): string | null => {
+      if (!fecha) return null;
+      
+      // Si ya es string en formato YYYY-MM-DD, retornarlo
+      if (typeof fecha === 'string' && /^\d{4}-\d{2}-\d{2}/.test(fecha)) {
+        return fecha.substring(0, 10); // Tomar solo YYYY-MM-DD
+      }
+      
+      // Si es Date o string con timestamp, convertir a YYYY-MM-DD
+      try {
+        const fechaObj = fecha instanceof Date ? fecha : new Date(fecha);
+        if (isNaN(fechaObj.getTime())) return null;
+        
+        const year = fechaObj.getFullYear();
+        const month = String(fechaObj.getMonth() + 1).padStart(2, '0');
+        const day = String(fechaObj.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+      } catch {
+        return null;
+      }
+    };
+
+    // Filtro por fecha desde - comparación literal de strings YYYY-MM-DD
     let coincideFechaDesde = true;
     if (fechaDesde && s.fechaSolicitud) {
-      const fechaSolicitud = normalizarFecha(s.fechaSolicitud);
-      const desde = normalizarFecha(fechaDesde);
-      if (fechaSolicitud && desde) {
-        coincideFechaDesde = fechaSolicitud >= desde;
+      const fechaSolicitudStr = extraerFechaString(s.fechaSolicitud);
+      const desdeStr = extraerFechaString(fechaDesde);
+      if (fechaSolicitudStr && desdeStr) {
+        // Comparación directa de strings (YYYY-MM-DD se compara correctamente)
+        coincideFechaDesde = fechaSolicitudStr >= desdeStr;
       } else {
         coincideFechaDesde = false;
       }
     }
     
-    // Filtro por fecha hasta
+    // Filtro por fecha hasta - comparación literal de strings YYYY-MM-DD
     let coincideFechaHasta = true;
     if (fechaHasta && s.fechaSolicitud) {
-      const fechaSolicitud = normalizarFecha(s.fechaSolicitud);
-      const hasta = normalizarFecha(fechaHasta);
-      if (fechaSolicitud && hasta) {
-        coincideFechaHasta = fechaSolicitud <= hasta;
+      const fechaSolicitudStr = extraerFechaString(s.fechaSolicitud);
+      const hastaStr = extraerFechaString(fechaHasta);
+      if (fechaSolicitudStr && hastaStr) {
+        // Comparación directa de strings (YYYY-MM-DD se compara correctamente)
+        coincideFechaHasta = fechaSolicitudStr <= hastaStr;
       } else {
         coincideFechaHasta = false;
       }
@@ -197,17 +289,6 @@ function AdminContent() {
     return paginas;
   };
 
-  const formatearFecha = (fecha: string | undefined) => {
-    if (!fecha) return "N/A";
-    return new Date(fecha).toLocaleString("es-CO", {
-      year: "numeric",
-      month: "2-digit",
-      day: "2-digit",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-  };
-
   const formatearMonto = (monto: string | number | undefined) => {
     if (!monto) return "N/A";
     return new Intl.NumberFormat("es-CO", {
@@ -215,25 +296,6 @@ function AdminContent() {
       currency: "COP",
       minimumFractionDigits: 0,
     }).format(Number(monto));
-  };
-
-  // Función helper para obtener el teléfono (puede ser telefono o celularNegocio)
-  const obtenerTelefono = (s: SolicitudCredito | AutorizacionDatos): string => {
-    if ('telefono' in s && s.telefono) return s.telefono;
-    if ('celularNegocio' in s && s.celularNegocio) return s.celularNegocio;
-    return "N/A";
-  };
-
-  // Función helper para verificar si es AutorizacionDatos
-  const esAutorizacionDatos = (s: SolicitudCredito | AutorizacionDatos): s is AutorizacionDatos => {
-    return 'ciudadNegocio' in s && 'direccionNegocio' in s && 'celularNegocio' in s;
-  };
-
-  // Función helper para obtener el nombre de la ciudad de negocio
-  const obtenerNombreCiudad = (codigo: string | undefined): string => {
-    if (!codigo) return "N/A";
-    const ciudad = ciudadesNegocio.find(c => c.codigo === codigo);
-    return ciudad ? ciudad.nombre : codigo;
   };
 
   // Función helper para obtener la URL del documento PDF
@@ -289,6 +351,7 @@ function AdminContent() {
       "Nombre Completo",
       "Tipo Documento",
       "Numero Documento",
+      "Referencia",
       "Fecha Nacimiento",
       "Fecha Expedicion Documento",
       "Email",
@@ -305,6 +368,7 @@ function AdminContent() {
         escaparCSV(s.nombreCompleto),
         escaparCSV(s.tipoDocumento),
         escaparCSV(s.numeroDocumento),
+        escaparCSV('referencia' in s && s.referencia ? s.referencia : ""),
         escaparCSV(s.fechaNacimiento),
         escaparCSV(esAutorizacionDatos(s) ? s.fechaExpedicionDocumento : ""),
         escaparCSV(s.email),
@@ -397,7 +461,7 @@ function AdminContent() {
             <div className="relative flex-1 min-w-[200px]">
               <input
                 type="text"
-                placeholder="Buscar..."
+                placeholder="Buscar en todos los campos..."
                 value={filtro}
                 onChange={(e) => setFiltro(e.target.value)}
                 className="w-full px-3 py-2 pl-9 border border-gray-300 rounded-lg text-sm text-gray-800 focus:ring-2 focus:ring-bancamia-rojo focus:border-bancamia-rojo transition-all"
@@ -505,6 +569,8 @@ function AdminContent() {
                   <th className="px-6 py-4 text-left text-sm font-semibold">Fecha</th>
                   <th className="px-6 py-4 text-left text-sm font-semibold">Nombre</th>
                   <th className="px-6 py-4 text-left text-sm font-semibold">Documento</th>
+                  <th className="px-6 py-4 text-left text-sm font-semibold">Referencia</th>
+                  <th className="px-6 py-4 text-left text-sm font-semibold">Email</th>
                   <th className="px-6 py-4 text-left text-sm font-semibold">Ciudad Negocio</th>
                   <th className="px-6 py-4 text-left text-sm font-semibold">Celular</th>
                   <th className="px-6 py-4 text-center text-sm font-semibold">Acciones</th>
@@ -513,7 +579,7 @@ function AdminContent() {
               <tbody className="divide-y divide-gray-200">
                 {cargandoSolicitudes ? (
                   <tr>
-                    <td colSpan={6} className="px-6 py-12 text-center">
+                    <td colSpan={8} className="px-6 py-12 text-center">
                       <div className="flex flex-col items-center space-y-3">
                         <svg className="animate-spin h-8 w-8 text-bancamia-rojo" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                           <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
@@ -525,7 +591,7 @@ function AdminContent() {
                   </tr>
                 ) : solicitudesFiltradas.length === 0 ? (
                   <tr>
-                    <td colSpan={6} className="px-6 py-12 text-center text-gray-500">
+                    <td colSpan={8} className="px-6 py-12 text-center text-gray-500">
                       <div className="flex flex-col items-center space-y-3">
                         <span className="text-6xl">📭</span>
                         <p className="text-lg font-semibold">No hay solicitudes</p>
@@ -551,6 +617,12 @@ function AdminContent() {
                         {solicitud.nombreCompleto}
                       </td>
                       <td className="px-6 py-4 text-sm text-gray-600">{solicitud.numeroDocumento}</td>
+                      <td className="px-6 py-4 text-sm text-gray-600 font-mono">
+                        {'referencia' in solicitud && solicitud.referencia ? solicitud.referencia : 'N/A'}
+                      </td>
+                      <td className="px-6 py-4 text-sm text-gray-600">
+                        {solicitud.email}
+                      </td>
                       <td className="px-6 py-4 text-sm text-gray-600">
                         {'ciudadNegocio' in solicitud ? obtenerNombreCiudad(solicitud.ciudadNegocio) : 'N/A'}
                       </td>
@@ -697,6 +769,12 @@ function AdminContent() {
                       {solicitudSeleccionada.tipoDocumento} {solicitudSeleccionada.numeroDocumento}
                     </p>
                   </div>
+                  {'referencia' in solicitudSeleccionada && solicitudSeleccionada.referencia && (
+                    <div>
+                      <p className="text-sm text-gray-600">Referencia</p>
+                      <p className="font-semibold text-gray-900 font-mono">{solicitudSeleccionada.referencia}</p>
+                    </div>
+                  )}
                   <div>
                     <p className="text-sm text-gray-600">Fecha de Nacimiento</p>
                     <p className="font-semibold text-gray-900">{solicitudSeleccionada.fechaNacimiento}</p>

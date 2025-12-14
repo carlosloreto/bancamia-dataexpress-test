@@ -324,10 +324,21 @@ export default function Home() {
         console.log('No hay usuario autenticado, userId y token serán null');
       }
 
-      // Preparar datos para enviar, incluyendo userId
+      // Generar referencia: numeroDocumento + 4 dígitos consecutivos
+      const generarReferencia = (numeroDoc: string): string => {
+        // Obtener los últimos 4 dígitos del timestamp actual
+        const timestamp = Date.now().toString();
+        const ultimos4Digitos = timestamp.slice(-4);
+        
+        // Concatenar: numeroDocumento + 4 dígitos
+        return `${numeroDoc}${ultimos4Digitos}`;
+      };
+
+      // Preparar datos para enviar, incluyendo userId y referencia
       const datosParaEnviar = {
         ...formData,
         userId: userId,
+        referencia: generarReferencia(formData.numeroDocumento),
       };
 
       // Preparar headers con token si existe
