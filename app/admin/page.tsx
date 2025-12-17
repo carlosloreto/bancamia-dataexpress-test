@@ -147,13 +147,13 @@ function AdminContent() {
     
     if (filtro) {
       // Buscar en nombre completo
-      const coincideNombre = s.nombreCompleto && s.nombreCompleto.toLowerCase().includes(filtroTexto);
+      const coincideNombre = !!(s.nombreCompleto && s.nombreCompleto.toLowerCase().includes(filtroTexto));
       
       // Buscar en número de documento
-      const coincideDocumento = s.numeroDocumento && s.numeroDocumento.includes(filtro);
+      const coincideDocumento = !!(s.numeroDocumento && s.numeroDocumento.includes(filtro));
       
       // Buscar en email
-      const coincideEmail = s.email && s.email.toLowerCase().includes(filtroTexto);
+      const coincideEmail = !!(s.email && s.email.toLowerCase().includes(filtroTexto));
       
       // Buscar en ciudad de negocio (nombre y código)
       let coincideCiudad = false;
@@ -164,7 +164,7 @@ function AdminContent() {
       
       // Buscar en celular/telefono
       const telefono = obtenerTelefono(s);
-      const coincideTelefono = telefono !== "N/A" && telefono.includes(filtro);
+      const coincideTelefono = !!(telefono !== "N/A" && telefono.includes(filtro));
       
       // Buscar en fecha formateada
       let coincideFecha = false;
@@ -174,10 +174,10 @@ function AdminContent() {
       }
       
       // Buscar en tipo de documento
-      const coincideTipoDoc = s.tipoDocumento && s.tipoDocumento.toLowerCase().includes(filtroTexto);
+      const coincideTipoDoc = !!(s.tipoDocumento && s.tipoDocumento.toLowerCase().includes(filtroTexto));
       
       // Buscar en referencia
-      const coincideReferencia = 'referencia' in s && s.referencia && String(s.referencia).includes(filtro);
+      const coincideReferencia = !!('referencia' in s && s.referencia && String(s.referencia).includes(filtro));
       
       // Coincide si alguno de los campos coincide
       coincideTexto = coincideNombre || coincideDocumento || coincideEmail || 
